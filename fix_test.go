@@ -125,4 +125,20 @@ func TestFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	test2 := &Test{
+		Sub: TestSub{
+			Value: "diff",
+		},
+	}
+	err = Fix(test2)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	if err.Error() == `Diff: {*fix.Test}.Sub.Value:
+        -: "diff"
+        +: "test"` {
+		t.Fatal(err.Error())
+	}
 }
