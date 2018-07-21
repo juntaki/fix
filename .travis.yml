@@ -15,7 +15,6 @@ script:
     - go test -race -v $GO_FILES
 
 go:
-    - 1.8.x
     - 1.9.x
     - 1.10.x
     - tip
