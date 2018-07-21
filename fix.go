@@ -15,21 +15,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Payload struct {
-	Target interface{}
-}
-
 func encode(target interface{}) ([]byte, error) {
 	gob.Register(target)
-
-	p := Payload{
-		Target: target,
-	}
-
 	buf := bytes.NewBuffer([]byte{})
 
 	enc := gob.NewEncoder(buf)
-	err := enc.Encode(&p)
+	err := enc.Encode(&target)
 	if err != nil {
 		return nil, err
 	}
@@ -38,14 +29,11 @@ func encode(target interface{}) ([]byte, error) {
 }
 
 func decode(raw []byte, target *interface{}) error {
-	p := Payload{}
-
 	dec := gob.NewDecoder(bytes.NewReader(raw))
-	err := dec.Decode(&p)
+	err := dec.Decode(target)
 	if err != nil {
 		return err
 	}
-	*target = p.Target
 	return nil
 }
 
@@ -85,25 +73,25 @@ func Fix(target interface{}) error {
 	if err != nil { // file is not exist
 		ioutil.WriteFile(path, ret, 0666)
 		return errors.New("Write to file")
-	} else { // file exist
-		raw, err := ioutil.ReadFile(path)
-		if err != nil {
-			return errors.Wrap(err, "File cannot read: "+path)
-		}
-
-		// If equal, target still have the same result.
-		if bytes.Equal(ret, raw) {
-			return nil
-		}
-
-		// If not, try decode and show diff as error
-		var valid interface{}
-		err = decode(raw, &valid)
-		if err != nil {
-			return errors.Wrap(err, "File cannot decode: "+path)
-		}
-
-		return fmt.Errorf("Diff: %s", cmp.Diff(target, valid, cmpopts.EquateEmpty()))
 	}
 
+	// file exist
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return errors.Wrap(err, "File cannot read: "+path)
+	}
+
+	// If equal, target still have the same result.
+	if bytes.Equal(ret, raw) {
+		return nil
+	}
+
+	// If not, try decode and show diff as error
+	var valid interface{}
+	err = decode(raw, &valid)
+	if err != nil {
+		return errors.Wrap(err, "File cannot decode: "+path)
+	}
+
+	return fmt.Errorf("Diff: %s", cmp.Diff(target, valid, cmpopts.EquateEmpty()))
 }
