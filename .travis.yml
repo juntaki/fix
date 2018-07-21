@@ -1,9 +1,6 @@
 language: go
 
-install: true # use vendor/, skip go get
-
 before_install:
-    - GO_FILES=$(go list ./... | grep -v /vendor/ | grep -v /test-fixtures/) # avoid vetting vendor/ for Go < 1.9.x and the test fixtures
     - go get golang.org/x/lint/golint
     - go get honnef.co/go/tools/cmd/megacheck
     - go get github.com/mdempsky/unconvert
@@ -18,7 +15,6 @@ script:
     - go test -race -v $GO_FILES
 
 go:
-    - 1.7.x
     - 1.8.x
     - 1.9.x
     - 1.10.x
