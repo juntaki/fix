@@ -1,8 +1,6 @@
 # fix
 [![Build Status](https://travis-ci.org/juntaki/fix.svg?branch=master)](https://travis-ci.org/juntaki/fix) [![GoDoc](https://godoc.org/github.com/juntaki/fix?status.svg)](https://godoc.org/github.com/juntaki/fix) [![Go Report Card](https://goreportcard.com/badge/github.com/juntaki/fix)](https://goreportcard.com/report/github.com/juntaki/fix)    
 
-github.com/juntaki/fix
-
 ~~~
 go get github.com/juntaki/fix
 ~~~
