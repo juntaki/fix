@@ -17,9 +17,10 @@ import (
 
 func encode(target interface{}) ([]byte, error) {
 	gob.Register(target)
-	buf := bytes.NewBuffer([]byte{})
 
-	enc := gob.NewEncoder(buf)
+	var buf bytes.Buffer
+
+	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(&target)
 	if err != nil {
 		return nil, err
