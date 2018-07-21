@@ -38,26 +38,32 @@ func decode(raw []byte, target *interface{}) error {
 }
 
 // DefaultOutputPath is ./testdata/<caller_func_name>
-func DefaultOutputPath(funcName string) string {
+func DefaultOutputPath(funcName string, additional ...string) string {
+	f := []string{}
+	f = append(f, funcName)
+	for _, a := range additional {
+		f = append(f, a)
+	}
 	baseDir := "testdata/"
-	filename := strings.Replace(funcName, "/", "_", -1)
-	return filepath.Join(baseDir, filename)
+	return filepath.Join(baseDir,
+		strings.Replace(strings.Join(f, "_"), "/", "_", -1),
+	)
 }
 
 var outputPath = DefaultOutputPath
 
 // SetOutputPathFunc overwrite DefaultOutputPath
-func SetOutputPathFunc(in func(funcName string) string) {
+func SetOutputPathFunc(in func(funcName string, additional ...string) string) {
 	outputPath = in
 }
 
 // Fix target pointer as gob encoded data file.
 // if file doesn't exist, just write data to file and return error.
 // if file exist, test if the target is the same as file's data.
-func Fix(target interface{}) error {
+func Fix(target interface{}, additional ...string) error {
 	pt, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pt).Name()
-	path := outputPath(funcName)
+	path := outputPath(funcName, additional...)
 
 	err := os.MkdirAll(filepath.Dir(path), 0777)
 	if err != nil {

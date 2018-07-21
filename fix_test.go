@@ -60,7 +60,8 @@ func Test_encode(t *testing.T) {
 
 func TestDefaultOutputPath(t *testing.T) {
 	type args struct {
-		funcName string
+		funcName   string
+		additional []string
 	}
 	tests := []struct {
 		name string
@@ -70,14 +71,15 @@ func TestDefaultOutputPath(t *testing.T) {
 		{
 			name: "base",
 			args: args{
-				funcName: "test",
+				funcName:   "test",
+				additional: []string{"a", "b", "c"},
 			},
-			want: "testdata/test",
+			want: "testdata/test_a_b_c",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DefaultOutputPath(tt.args.funcName); got != tt.want {
+			if got := DefaultOutputPath(tt.args.funcName, tt.args.additional...); got != tt.want {
 				t.Errorf("DefaultOutputPath() = %v, want %v", got, tt.want)
 			}
 		})
@@ -85,7 +87,7 @@ func TestDefaultOutputPath(t *testing.T) {
 }
 
 func TestSetOutputPathFunc(t *testing.T) {
-	SetOutputPathFunc(func(funcName string) string {
+	SetOutputPathFunc(func(funcName string, additional ...string) string {
 		return funcName
 	})
 	type args struct {
