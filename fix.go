@@ -100,5 +100,10 @@ func Fix(target interface{}, additional ...string) error {
 		return errors.Wrap(err, "File cannot decode: "+path)
 	}
 
+	// If decoded results are equal, It may be OK.
+	if cmp.Equal(target, valid, cmpopts.EquateEmpty()) {
+		return nil
+	}
+
 	return fmt.Errorf("Diff: %s", cmp.Diff(target, valid, cmpopts.EquateEmpty()))
 }
