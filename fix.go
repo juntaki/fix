@@ -101,9 +101,9 @@ func Fix(target interface{}, additional ...string) error {
 	}
 
 	// If decoded results are equal, It may be OK.
-	if cmp.Equal(target, valid, cmpopts.EquateEmpty()) {
+	if cmp.Equal(valid, target, cmpopts.EquateEmpty()) {
 		return nil
 	}
 
-	return fmt.Errorf("Diff: %s", cmp.Diff(target, valid, cmpopts.EquateEmpty()))
+	return fmt.Errorf("Diff: %s", cmp.Diff(valid, target, cmpopts.EquateEmpty()))
 }
