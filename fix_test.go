@@ -138,9 +138,7 @@ func TestFix(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ret := `Diff: {*fix.Test}.Sub.Value:
-        -: "test"
-        +: "diff"`
+	ret := "Diff: {*fix.Test}.Sub.Value:\n\t-: \"test\"\n\t+: \"diff\"\n"
 
 	if err.Error() != ret {
 		t.Fatal(err.Error(), ret)
