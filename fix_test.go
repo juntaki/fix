@@ -20,11 +20,12 @@ func Test_encode(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
+		codec   Codec
 		want    interface{}
 		wantErr bool
 	}{
 		{
-			name: "",
+			name: "json",
 			args: args{
 				target: &Test{
 					Sub: TestSub{
@@ -32,6 +33,24 @@ func Test_encode(t *testing.T) {
 					},
 				},
 			},
+			codec: JSON,
+			want: &Test{
+				Sub: TestSub{
+					Value: "test",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "gob",
+			args: args{
+				target: &Test{
+					Sub: TestSub{
+						Value: "test",
+					},
+				},
+			},
+			codec: Gob,
 			want: &Test{
 				Sub: TestSub{
 					Value: "test",
@@ -42,17 +61,20 @@ func Test_encode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			raw, err := encode(tt.args.target)
+			raw, err := tt.codec.Marshal(tt.args.target)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("encode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			var got interface{}
-			if err := decode(raw, &got); (err != nil) != tt.wantErr {
-				t.Errorf("decode() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("encode/decode = %v, want %v", got, tt.want)
+
+			if tt.codec.Unmarshal != nil {
+				got := &Test{}
+				if err := tt.codec.Unmarshal(raw, got); (err != nil) != tt.wantErr {
+					t.Errorf("decode() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("encode/decode = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
@@ -115,7 +137,7 @@ func TestSetOutputPathFunc(t *testing.T) {
 	}
 }
 
-func TestFix(t *testing.T) {
+func TestFixJSON(t *testing.T) {
 	SetOutputPathFunc(DefaultOutputPath)
 	test := &Test{
 		Sub: TestSub{
@@ -123,7 +145,7 @@ func TestFix(t *testing.T) {
 		},
 	}
 
-	err := Fix(test)
+	err := JSON.Fix(test)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,14 +155,44 @@ func TestFix(t *testing.T) {
 			Value: "diff",
 		},
 	}
-	err = Fix(test2)
+	err = JSON.Fix(test2)
 	if err == nil {
 		t.Fatal(err)
 	}
 
-	ret := "Diff: {*fix.Test}.Sub.Value:\n\t-: \"test\"\n\t+: \"diff\"\n"
+	message := err.Error()
+	err = JSON.Fix(message, "message")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
-	if err.Error() != ret {
-		t.Fatal(err.Error(), ret)
+func TestFixGob(t *testing.T) {
+	SetOutputPathFunc(DefaultOutputPath)
+	test := &Test{
+		Sub: TestSub{
+			Value: "test",
+		},
+	}
+
+	err := Gob.Fix(test)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	test2 := &Test{
+		Sub: TestSub{
+			Value: "diff",
+		},
+	}
+	err = Gob.Fix(test2)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	message := err.Error()
+	err = Gob.Fix(message, "message")
+	if err != nil {
+		t.Fatal(err)
 	}
 }

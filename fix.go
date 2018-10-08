@@ -3,6 +3,7 @@ package fix
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,15 +14,34 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-func encode(target interface{}) ([]byte, error) {
+var (
+	// Gob is a Codec that uses the gob package.
+	Gob = Codec{gobMarshal, gobUnmarshal}
+	// JSON is a Codec that uses the json package.
+	JSON = Codec{jsonMarshal, nil}
+)
+
+type Codec struct {
+	Marshal   func(interface{}) ([]byte, error)
+	Unmarshal func([]byte, interface{}) error
+}
+
+func Fix(target interface{}, additional ...string) error {
+	return JSON.Fix(target, additional...)
+}
+
+func jsonMarshal(target interface{}) ([]byte, error) {
+	return json.MarshalIndent(target, "", "  ")
+}
+
+func gobMarshal(target interface{}) ([]byte, error) {
 	gob.Register(target)
-
 	var buf bytes.Buffer
-
 	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(&target)
+	err := enc.Encode(target)
 	if err != nil {
 		return nil, err
 	}
@@ -29,13 +49,8 @@ func encode(target interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func decode(raw []byte, target *interface{}) error {
-	dec := gob.NewDecoder(bytes.NewReader(raw))
-	err := dec.Decode(target)
-	if err != nil {
-		return err
-	}
-	return nil
+func gobUnmarshal(raw []byte, target interface{}) error {
+	return gob.NewDecoder(bytes.NewReader(raw)).Decode(target)
 }
 
 // DefaultOutputPath is ./testdata/<caller_func_name>
@@ -61,49 +76,62 @@ func SetOutputPathFunc(in func(funcName string, additional ...string) string) {
 // Fix target pointer as gob encoded data file.
 // if file doesn't exist, just write data to file and return error.
 // if file exist, test if the target is the same as file's data.
-func Fix(target interface{}, additional ...string) error {
+func (c *Codec) Fix(target interface{}, additional ...string) error {
 	pt, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pt).Name()
 	path := outputPath(funcName, additional...)
 
-	err := os.MkdirAll(filepath.Dir(path), 0777)
-	if err != nil {
-		return errors.Wrap(err, "Cannot make dir")
-	}
-
-	ret, err := encode(target)
+	new, err := c.Marshal(target)
 	if err != nil {
 		return errors.Wrap(err, "Target cannot encode")
 	}
 
-	_, err = os.Stat(path)
-	if err != nil { // file is not exist
-		ioutil.WriteFile(path, ret, 0666)
+	// file is not exist, write and exit.
+	if _, err := os.Stat(path); err != nil {
+		err := os.MkdirAll(filepath.Dir(path), 0777)
+		if err != nil {
+			return errors.Wrap(err, "Cannot make dir")
+		}
+
+		err = ioutil.WriteFile(path, new, 0666)
+		if err != nil {
+			return errors.Wrap(err, "Failed to write file")
+		}
 		return errors.New("Write to file")
 	}
 
-	// file exist
-	raw, err := ioutil.ReadFile(path)
+	// if file exist..
+	old, err := ioutil.ReadFile(path)
 	if err != nil {
 		return errors.Wrap(err, "File cannot read: "+path)
 	}
 
 	// If equal, target still have the same result.
-	if bytes.Equal(ret, raw) {
+	if bytes.Equal(new, old) {
 		return nil
 	}
 
-	// If not, try decode and show diff as error
-	var valid interface{}
-	err = decode(raw, &valid)
-	if err != nil {
-		return errors.Wrap(err, "File cannot decode: "+path)
-	}
+	if c.Unmarshal != nil {
+		// If not, try decode and show diff as error
+		var valid interface{}
+		err = c.Unmarshal(old, &valid)
+		if err != nil {
+			return errors.Wrap(err, "File cannot decode: "+path)
+		}
 
-	// If decoded results are equal, It may be OK.
-	if cmp.Equal(valid, target, cmpopts.EquateEmpty()) {
-		return nil
-	}
+		// If decoded results are equal, It may be OK.
+		if cmp.Equal(valid, target, cmpopts.EquateEmpty()) {
+			return nil
+		}
 
-	return fmt.Errorf("Diff: %s", cmp.Diff(valid, target, cmpopts.EquateEmpty()))
+		return fmt.Errorf("Diff: %s", cmp.Diff(valid, target, cmpopts.EquateEmpty()))
+	} else {
+		return fmt.Errorf("Diff: %s", lineDiff(string(old), string(new)))
+	}
+}
+
+func lineDiff(src1, src2 string) string {
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(src1, src2, false)
+	return dmp.DiffPrettyText(diffs)
 }
