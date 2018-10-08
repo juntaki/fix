@@ -24,11 +24,13 @@ var (
 	JSON = Codec{jsonMarshal, jsonCompare}
 )
 
+// Codec is funcstions to store structure to file.
 type Codec struct {
 	Marshal func(interface{}) ([]byte, error)
 	Compare func(old, new []byte) error
 }
 
+// Fix uses JSON codec as default
 func Fix(target interface{}, additional ...string) error {
 	return JSON.Fix(target, additional...)
 }
@@ -91,9 +93,8 @@ func gobCompare(old, new []byte) error {
 func DefaultOutputPath(funcName string, additional ...string) string {
 	f := []string{}
 	f = append(f, funcName)
-	for _, a := range additional {
-		f = append(f, a)
-	}
+	f = append(f, additional...)
+
 	baseDir := "testdata/"
 	return filepath.Join(baseDir,
 		strings.Replace(strings.Join(f, "_"), "/", "_", -1),
