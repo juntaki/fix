@@ -1,7 +1,6 @@
 package fix
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -61,20 +60,10 @@ func Test_encode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			raw, err := tt.codec.Marshal(tt.args.target)
+			_, err := tt.codec.Marshal(tt.args.target)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("encode() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-
-			if tt.codec.Unmarshal != nil {
-				got := &Test{}
-				if err := tt.codec.Unmarshal(raw, got); (err != nil) != tt.wantErr {
-					t.Errorf("decode() error = %v, wantErr %v", err, tt.wantErr)
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("encode/decode = %v, want %v", got, tt.want)
-				}
 			}
 		})
 	}
