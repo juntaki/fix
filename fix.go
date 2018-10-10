@@ -32,7 +32,11 @@ type Codec struct {
 
 // Fix uses JSON codec as default
 func Fix(target interface{}, additional ...string) error {
-	return JSON.Fix(target, additional...)
+	// Fix() caller's func name
+	pt, _, _, _ := runtime.Caller(1)
+	funcName := runtime.FuncForPC(pt).Name()
+
+	return JSON.fix(funcName, target, additional...)
 }
 
 func jsonMarshal(target interface{}) ([]byte, error) {
@@ -116,6 +120,10 @@ func (c *Codec) Fix(target interface{}, additional ...string) error {
 	pt, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pt).Name()
 
+	return c.fix(funcName, target, additional...)
+}
+
+func (c *Codec) fix(funcName string, target interface{}, additional ...string) error {
 	// Generate path
 	path := outputPath(funcName, additional...)
 
