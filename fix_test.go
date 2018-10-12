@@ -204,13 +204,13 @@ func TestFixPP(t *testing.T) {
 			Value: "diff",
 		},
 	}
-	err = Gob.Fix(test2)
+	err = PP.Fix(test2)
 	if err == nil {
 		t.Fatal(err)
 	}
 
 	message := err.Error()
-	err = Gob.Fix(message, "message")
+	err = PP.Fix(message, "message")
 	if err != nil {
 		t.Fatal(err)
 	}
