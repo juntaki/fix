@@ -133,8 +133,8 @@ func (c *Codec) fix(funcName string, target interface{}, additional ...string) e
 	}
 
 	// file is not exist, write and exit.
-	if _, err := os.Stat(path); err != nil {
-		err := os.MkdirAll(filepath.Dir(path), 0777)
+	if _, err = os.Stat(path); err != nil {
+		err = os.MkdirAll(filepath.Dir(path), 0777)
 		if err != nil {
 			return errors.Wrap(err, "Cannot make dir")
 		}
