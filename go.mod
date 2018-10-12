@@ -12,7 +12,10 @@ require (
 	github.com/google/go-cmp v0.2.0
 	github.com/gordonklaus/ineffassign v0.0.0-20180909121442-1003c8bd00dc // indirect
 	github.com/jgautheron/goconst v0.0.0-20170703170152-9740945f5dcb // indirect
+	github.com/k0kubun/pp v2.3.0+incompatible
 	github.com/kisielk/errcheck v1.1.0 // indirect
+	github.com/mattn/go-colorable v0.0.9 // indirect
+	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mdempsky/maligned v0.0.0-20180708014732-6e39bd26a8c8 // indirect
 	github.com/mdempsky/unconvert v0.0.0-20180703203632-1a9a0a0a3594 // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
