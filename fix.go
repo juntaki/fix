@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -22,6 +23,8 @@ var (
 	Gob = Codec{gobMarshal, gobCompare}
 	// JSON is a Codec that uses the json package.
 	JSON = Codec{jsonMarshal, jsonCompare}
+	// PP is a Codec that uses the pp package.
+	PP = Codec{ppMarshal, ppCompare}
 )
 
 // Codec is funcstions to store structure to file.
@@ -35,8 +38,21 @@ func Fix(target interface{}, additional ...string) error {
 	// Fix() caller's func name
 	pt, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pt).Name()
-
 	return JSON.fix(funcName, target, additional...)
+}
+
+func ppMarshal(target interface{}) ([]byte, error) {
+	pp.ColoringEnabled = false
+	return []byte(pp.Sprintln(target)), nil
+}
+
+func ppCompare(old, new []byte) error {
+	// If equal, target still have the same result.
+	if bytes.Equal(new, old) {
+		return nil
+	}
+
+	return fmt.Errorf("Diff: %s", lineDiff(string(old), string(new)))
 }
 
 func jsonMarshal(target interface{}) ([]byte, error) {

@@ -185,3 +185,33 @@ func TestFixGob(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestFixPP(t *testing.T) {
+	SetOutputPathFunc(DefaultOutputPath)
+	test := &Test{
+		Sub: TestSub{
+			Value: "test",
+		},
+	}
+
+	err := PP.Fix(test)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	test2 := &Test{
+		Sub: TestSub{
+			Value: "diff",
+		},
+	}
+	err = Gob.Fix(test2)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	message := err.Error()
+	err = Gob.Fix(message, "message")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
