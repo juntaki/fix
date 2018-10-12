@@ -1,0 +1,5 @@
+&&fix.Test{
+  Sub: fix.TestSub{
+    Value: "test",
+  },
+}
