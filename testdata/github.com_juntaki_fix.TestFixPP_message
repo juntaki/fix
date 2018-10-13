@@ -1,1 +1,1 @@
-&"Diff: &&fix.Test{\n  Sub: fix.TestSub{\n    Value: \"\x1b[31mtest\x1b[0m\x1b[32mdiff\x1b[0m\",\n  },\n}\n"
+&"Diff: &&fix.Test{\n  Sub: fix.TestSub{\n    Value: \"\x1b[31mtest\x1b[0m\x1b[32mdiff\x1b[0m\",\n  },\n  PublicString: \"\",\n  PublicMap:    map[int]int{},\n}\n"

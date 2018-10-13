@@ -2,4 +2,6 @@
   Sub: fix.TestSub{
     Value: "test",
   },
+  PublicString: "",
+  PublicMap:    map[int]int{},
 }

@@ -1,5 +1,7 @@
 {
   "Sub": {
     "Value": "test"
-  }
+  },
+  "PublicString": "",
+  "PublicMap": null
 }

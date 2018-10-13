@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/k0kubun/pp"
+	"github.com/juntaki/pp"
 	"github.com/pkg/errors"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -103,7 +103,9 @@ func gobCompare(old, new []byte) error {
 	}
 
 	// If decoded results are equal, It may be OK.
-	if cmp.Equal(decodedOld, decodedNew, cmpopts.EquateEmpty()) {
+	if cmp.Equal(decodedOld, decodedNew,
+		cmpopts.EquateEmpty(),
+	) {
 		return nil
 	}
 	return fmt.Errorf("Diff: %s", cmp.Diff(decodedOld, decodedNew, cmpopts.EquateEmpty()))
