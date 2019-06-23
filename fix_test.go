@@ -54,35 +54,26 @@ func Test_encode(t *testing.T) {
 			codec:   PP,
 			wantErr: false,
 		},
-		{
-			name: "gob",
-			args: args{
-				target: &Test{
-					Sub: sub,
-					// PublicMap: map[int]int{1: 1, 2: 2, 3: 3},
-				},
-			},
-			codec:   Gob,
-			wantErr: false,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			val1, err := tt.codec.Marshal(tt.args.target)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			val2, err := tt.codec.Marshal(tt.args.target)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			for i := 0 ; i<100; i++ {
+				val1, err := tt.codec.Marshal(tt.args.target)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				val2, err := tt.codec.Marshal(tt.args.target)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
 
-			err = tt.codec.Compare(val1, val2)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Compare() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				err = tt.codec.Compare(val1, val2)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Compare() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
 			}
 		})
 	}
@@ -170,36 +161,6 @@ func TestFixJSON(t *testing.T) {
 
 	message := err.Error()
 	err = JSON.Fix(message, "message")
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestFixGob(t *testing.T) {
-	SetOutputPathFunc(DefaultOutputPath)
-	test := &Test{
-		Sub: TestSub{
-			Value: "test",
-		},
-	}
-
-	err := Gob.Fix(test)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	test2 := &Test{
-		Sub: TestSub{
-			Value: "diff",
-		},
-	}
-	err = Gob.Fix(test2)
-	if err == nil {
-		t.Fatal(err)
-	}
-
-	message := err.Error()
-	err = Gob.Fix(message, "message")
 	if err != nil {
 		t.Fatal(err)
 	}
