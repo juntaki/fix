@@ -24,12 +24,12 @@ type Codec struct {
 	Compare func(old, new []byte) error
 }
 
-// Fix uses JSON codec as default
+// Fix uses PP codec as default
 func Fix(target interface{}, additional ...string) error {
 	// Fix() caller's func name
 	pt, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pt).Name()
-	return JSON.fix(funcName, target, additional...)
+	return PP.fix(funcName, target, additional...)
 }
 
 // DefaultOutputPath is ./testdata/<caller_func_name>
