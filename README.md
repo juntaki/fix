@@ -16,5 +16,5 @@ if err != nil {
 }
 ~~~
 
-First test will fail, because juntaki/fix writes gob encoded binary to file.
+First test will fail, because juntaki/fix writes serialized data to file.
 From the second time, the test will pass, if output is the same as first output.
