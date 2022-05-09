@@ -17,5 +17,5 @@ func ppCompare(old, new []byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("Diff: %s", lineDiff(string(old), string(new)))
+	return fmt.Errorf("diff: %s", lineDiff(string(old), string(new)))
 }
